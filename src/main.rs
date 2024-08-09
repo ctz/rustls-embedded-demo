@@ -616,7 +616,7 @@ mod heap {
     use core::alloc::{GlobalAlloc, Layout};
     use core::mem::MaybeUninit;
     use core::ptr::{self, NonNull};
-    use defmt::{dbg, trace};
+    use defmt::trace;
     use spin::{mutex::SpinMutex, Once};
     use tlsf::Tlsf;
 
@@ -650,13 +650,6 @@ mod heap {
                 .map(|nn| nn.as_mut_ptr().cast())
                 .unwrap_or(ptr::null_mut());
 
-            dbg!(
-                "alloc(Layout {{ size: {}, align: {} }} -> {})",
-                layout.size(),
-                layout.align(),
-                ptr
-            );
-
             log_stats(&tlsf);
 
             ptr
@@ -667,8 +660,6 @@ mod heap {
                 let mut tlsf = self.inner.lock();
 
                 log_stats(&tlsf);
-
-                dbg!("free({})", nn);
 
                 tlsf.free(nn.cast());
 
