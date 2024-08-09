@@ -1,8 +1,6 @@
 #![no_std]
 
 extern crate alloc;
-#[cfg(feature = "std")]
-extern crate std;
 
 use core::ops::Range;
 use alloc::sync::Arc;
@@ -27,19 +25,15 @@ use rustls::time_provider::TimeProvider;
 mod aead;
 mod hash;
 mod hmac;
+mod kx;
+mod sign;
+mod verify;
 
 use core::time::Duration;
 
 const TIME_BETWEEN_1900_1970: u64 = 2_208_988_800;
-#[cfg(feature = "std")]
-mod hpke;
-mod kx;
-mod sign;
-mod verify;
 const UNIX_TIME: u64 = 1705398728; // `date +%s`
 
-#[cfg(feature = "std")]
-pub use hpke::HPKE_PROVIDER;
 pub static NTP_TIME: Mutex<ThreadModeRawMutex, Option<u64>> = Mutex::new(None);
 pub static TIME_FROM_START: Mutex<ThreadModeRawMutex, Option<Instant>> = Mutex::new(None);
 

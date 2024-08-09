@@ -1,6 +1,7 @@
 #![no_std]
 #![no_main]
 #![feature(type_alias_impl_trait)]
+#![feature(impl_trait_in_assoc_type)]
 
 extern crate alloc;
 use alloc::format;
@@ -37,7 +38,7 @@ use rustls::unbuffered::{
     AppDataRecord, ConnectionState, EncryptError, WriteTraffic, EncodeError, InsufficientSizeError,UnbufferedStatus
 };
 
-use static_cell::make_static;
+use static_cell::StaticCell;
 use {defmt_rtt as _, panic_probe as _};
 
 use crate::buffer::TlsBuffer;
@@ -457,8 +458,9 @@ async fn set_up_network_stack(spawner: &Spawner) -> Result<&'static MyStack> {
     getrandom::init(rng);
     let seed = u64::from_le_bytes(seed);
 
+    static PACKET_QUEUE_STATIC: StaticCell<PacketQueue<16, 16>> = StaticCell::new();
     let device = Ethernet::new(
-        make_static!(PacketQueue::<16, 16>::new()),
+        PACKET_QUEUE_STATIC.init_with(|| PacketQueue::<16, 16>::new()),
         p.ETH,
         Irqs,
         p.PA1,
@@ -488,10 +490,13 @@ async fn set_up_network_stack(spawner: &Spawner) -> Result<&'static MyStack> {
         gateway: Some(Ipv4Address::new(192, 168, 50, 1)),
     });
     //Init network stack
-    let stack = &*make_static!(Stack::new(
+    static STACK_STATIC: StaticCell<Stack<Device>> = StaticCell::new();
+    static RESOURCES_STATIC: StaticCell<StackResources<3>> = StaticCell::new();
+
+    let stack = STACK_STATIC.init_with(|| Stack::new(
         device,
         net_config,
-        make_static!(StackResources::<3>::new()),
+        RESOURCES_STATIC.init_with(|| StackResources::<3>::new()),
         seed
     ));
 
