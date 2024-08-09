@@ -27,16 +27,17 @@ use embassy_time::Timer;
 use embassy_time::{Duration, Instant};
 use embedded_io_async::Write;
 use no_std_embedded_demo as lib;
-use rustls::pki_types::{DnsName, InvalidDnsNameError, ServerName};
 use rustls::client::{ClientConnectionData, EarlyDataError, UnbufferedClientConnection};
+use rustls::pki_types::{DnsName, InvalidDnsNameError, ServerName};
 
 use crate::lib::{init_call_to_ntp_server, TIME_FROM_START};
+use rustls::unbuffered::{
+    AppDataRecord, ConnectionState, EncodeError, EncryptError, InsufficientSizeError,
+    UnbufferedStatus, WriteTraffic,
+};
 #[allow(unused_imports)]
 use rustls::version::{TLS12, TLS13};
 use rustls::{ClientConfig, RootCertStore};
-use rustls::unbuffered::{
-    AppDataRecord, ConnectionState, EncryptError, WriteTraffic, EncodeError, InsufficientSizeError,UnbufferedStatus
-};
 
 use static_cell::StaticCell;
 use {defmt_rtt as _, panic_probe as _};
@@ -50,9 +51,9 @@ bind_interrupts!(struct Irqs {
 });
 
 const KB: usize = 1024;
-// Note that some sites like www.google.com/www.cloudflare.com need 
-// extra heap allocation here, this is the reason for 
-const HEAP_SIZE: usize = 25*KB/4;
+// Note that some sites like www.google.com/www.cloudflare.com need
+// extra heap allocation here, this is the reason for
+const HEAP_SIZE: usize = 25 * KB / 4;
 
 const INCOMING_TLS_BUFSIZ: usize = 6 * KB;
 const MAC_ADDR: [u8; 6] = [0x00, 0x00, 0xDE, 0xAD, 0xBE, 0xEF];
@@ -71,7 +72,6 @@ const SERVER_PORT: u16 = 443;
 
 #[embassy_executor::main]
 async fn start(spawner: Spawner) -> ! {
-
     heap::init();
 
     if let Err(e) = main(&spawner, buffers::get().unwrap()).await {
@@ -97,20 +97,12 @@ async fn main(
 
     init_call_to_ntp_server(stack).await;
 
-    TIME_FROM_START
-        .lock()
-        .await
-        .replace(Instant::now());
+    TIME_FROM_START.lock().await.replace(Instant::now());
 
     info!("querying host {:?}...", SERVER_NAME);
-    let dns_results = stack
-        .dns_query(SERVER_NAME, DnsQueryType::A)
-        .await?;
+    let dns_results = stack.dns_query(SERVER_NAME, DnsQueryType::A).await?;
 
-    let dns_addr: IpAddress = dns_results
-        .first()
-        .ok_or(Error::NoDnsResolution)?
-        .clone();
+    let dns_addr: IpAddress = dns_results.first().ok_or(Error::NoDnsResolution)?.clone();
 
     let mut socket = TcpSocket::new(stack, tcp_rx, tcp_tx);
 
@@ -118,18 +110,12 @@ async fn main(
 
     info!("Connecting...");
 
-    socket
-        .connect((dns_addr, SERVER_PORT))
-        .await?;
+    socket.connect((dns_addr, SERVER_PORT)).await?;
     info!("Connected to {}", socket.remote_endpoint());
 
     let mut root_store = RootCertStore::empty();
-    root_store.extend(
-        webpki_roots::TLS_SERVER_ROOTS
-            .iter()
-            .cloned(),
-    );
-    
+    root_store.extend(webpki_roots::TLS_SERVER_ROOTS.iter().cloned());
+
     let time_provider = lib::stub();
     let mut tls_config = ClientConfig::builder_with_details(lib::provider().into(), time_provider)
         .with_safe_default_protocol_versions()
@@ -204,10 +190,7 @@ async fn converse(
 
                     if payload.starts_with(b"HTTP") {
                         let response = core::str::from_utf8(payload)?;
-                        let header = response
-                            .lines()
-                            .next()
-                            .unwrap_or(response);
+                        let header = response.lines().next().unwrap_or(response);
 
                         info!("Payload: {}", header);
                     } else {
@@ -310,9 +293,7 @@ async fn recv_tls<'a>(
     socket: &'a mut TcpSocket<'_>,
     incoming_tls: &'a mut TlsBuffer<'_>,
 ) -> Result<()> {
-    let read = socket
-        .read(incoming_tls.unfilled())
-        .await?;
+    let read = socket.read(incoming_tls.unfilled()).await?;
     trace!("read {}B of TLS data", read);
     incoming_tls.advance(read);
     Ok(())
@@ -322,9 +303,7 @@ async fn send_tls<'a>(
     socket: &'a mut TcpSocket<'_>,
     outgoing_tls: &'a mut TlsBuffer<'_>,
 ) -> Result<()> {
-    socket
-        .write_all(&outgoing_tls.filled())
-        .await?;
+    socket.write_all(&outgoing_tls.filled()).await?;
     trace!("sent {}B of TLS data", outgoing_tls.used());
     outgoing_tls.clear();
     Ok(())
@@ -403,8 +382,7 @@ mod buffer {
             }
 
             let used = self.used;
-            self.inner
-                .copy_within(num_bytes..used, 0);
+            self.inner.copy_within(num_bytes..used, 0);
             self.used -= num_bytes;
 
             trace!("discarded {}B", num_bytes);
@@ -493,12 +471,14 @@ async fn set_up_network_stack(spawner: &Spawner) -> Result<&'static MyStack> {
     static STACK_STATIC: StaticCell<Stack<Device>> = StaticCell::new();
     static RESOURCES_STATIC: StaticCell<StackResources<3>> = StaticCell::new();
 
-    let stack = STACK_STATIC.init_with(|| Stack::new(
-        device,
-        net_config,
-        RESOURCES_STATIC.init_with(|| StackResources::<3>::new()),
-        seed
-    ));
+    let stack = STACK_STATIC.init_with(|| {
+        Stack::new(
+            device,
+            net_config,
+            RESOURCES_STATIC.init_with(|| StackResources::<3>::new()),
+            seed,
+        )
+    });
 
     // Launch network task
     spawner.spawn(net_task(stack))?;
@@ -621,14 +601,8 @@ mod getrandom {
 
     fn my_getrandom(dest: &mut [u8]) -> Result<(), Error> {
         let error = Error::UNSUPPORTED; // value is unimportant
-        embassy_futures::block_on(
-            MY_RNG
-                .lock()
-                .as_mut()
-                .ok_or(error)?
-                .async_fill_bytes(dest),
-        )
-        .map_err(|_| error)
+        embassy_futures::block_on(MY_RNG.lock().as_mut().ok_or(error)?.async_fill_bytes(dest))
+            .map_err(|_| error)
     }
 
     register_custom_getrandom!(my_getrandom);
@@ -638,10 +612,10 @@ mod heap {
     use core::alloc::{GlobalAlloc, Layout};
     use core::mem::MaybeUninit;
     use core::ptr::{self, NonNull};
-    use spin::{mutex::SpinMutex,Once};
-    use tlsf::Tlsf;
     use defmt::{dbg, trace};
-    
+    use spin::{mutex::SpinMutex, Once};
+    use tlsf::Tlsf;
+
     #[global_allocator]
     static HEAP: Heap = Heap {
         inner: SpinMutex::new(Tlsf::empty()),
@@ -655,11 +629,11 @@ mod heap {
         static ONCE: Once = Once::new();
 
         ONCE.call_once(|| unsafe {
-            static mut MEMORY: [MaybeUninit<u32>; super::HEAP_SIZE] = [MaybeUninit::uninit(); super::HEAP_SIZE];
+            static mut MEMORY: [MaybeUninit<u32>; super::HEAP_SIZE] =
+                [MaybeUninit::uninit(); super::HEAP_SIZE];
             HEAP.inner.lock().initialize(&mut MEMORY);
         });
     }
-
 
     unsafe impl GlobalAlloc for Heap {
         unsafe fn alloc(&self, layout: Layout) -> *mut u8 {
@@ -724,8 +698,6 @@ mod heap {
     }
 
     unsafe impl Sync for Heap {}
-
-
 }
 
 mod buffers {
@@ -737,10 +709,7 @@ mod buffers {
         static ONCE: AtomicBool = AtomicBool::new(false);
 
         let ord = atomic::Ordering::SeqCst;
-        if ONCE
-            .compare_exchange(false, true, ord, ord)
-            .is_ok()
-        {
+        if ONCE.compare_exchange(false, true, ord, ord).is_ok() {
             unsafe {
                 Some(Buffers {
                     incoming_tls: {

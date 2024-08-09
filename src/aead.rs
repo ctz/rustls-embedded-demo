@@ -2,7 +2,9 @@ use alloc::boxed::Box;
 
 use chacha20poly1305::aead::Buffer;
 use chacha20poly1305::{AeadInPlace, KeyInit, KeySizeUser};
-use rustls::crypto::cipher::{self, AeadKey, BorrowedPayload, Iv, PrefixedPayload, UnsupportedOperationError, NONCE_LEN};
+use rustls::crypto::cipher::{
+    self, AeadKey, BorrowedPayload, Iv, PrefixedPayload, UnsupportedOperationError, NONCE_LEN,
+};
 use rustls::{ConnectionTrafficSecrets, ContentType, ProtocolVersion};
 
 pub struct Chacha20Poly1305;

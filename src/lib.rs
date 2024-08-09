@@ -2,8 +2,8 @@
 
 extern crate alloc;
 
-use core::ops::Range;
 use alloc::sync::Arc;
+use core::ops::Range;
 use defmt::{dbg, Debug2Format};
 use rustls::pki_types::UnixTime;
 
@@ -17,9 +17,9 @@ use embassy_stm32::peripherals::ETH;
 use embassy_sync::{blocking_mutex::raw::ThreadModeRawMutex, mutex::Mutex};
 use embassy_time::Instant;
 use rustls::crypto::CryptoProvider;
-use rustls::pki_types::PrivateKeyDer;
-use rustls::crypto::SecureRandom;
 use rustls::crypto::KeyProvider;
+use rustls::crypto::SecureRandom;
+use rustls::pki_types::PrivateKeyDer;
 use rustls::time_provider::TimeProvider;
 
 mod aead;
@@ -36,7 +36,6 @@ const UNIX_TIME: u64 = 1705398728; // `date +%s`
 
 pub static NTP_TIME: Mutex<ThreadModeRawMutex, Option<u64>> = Mutex::new(None);
 pub static TIME_FROM_START: Mutex<ThreadModeRawMutex, Option<Instant>> = Mutex::new(None);
-
 
 pub fn provider() -> CryptoProvider {
     CryptoProvider {
@@ -73,14 +72,12 @@ impl KeyProvider for Provider {
     }
 }
 
-
 #[derive(Debug)]
 struct StubTimeProvider;
 
 pub fn stub() -> Arc<dyn TimeProvider> {
     Arc::new(StubTimeProvider)
 }
-
 
 impl TimeProvider for StubTimeProvider {
     fn current_time(&self) -> Option<UnixTime> {
@@ -91,8 +88,7 @@ impl TimeProvider for StubTimeProvider {
 
         dbg!(ntp_time);
 
-        let time_from_start =
-            embassy_futures::block_on(async { *TIME_FROM_START.lock().await });
+        let time_from_start = embassy_futures::block_on(async { *TIME_FROM_START.lock().await });
 
         dbg!(time_from_start);
 
@@ -105,17 +101,16 @@ impl TimeProvider for StubTimeProvider {
         // Either the call to NTP server was successful and we can use NTP time ...
         if let Some(now) = ntp_time {
             let now_in_unix = now - TIME_BETWEEN_1900_1970;
-        dbg!(now_in_unix + now_from_start.elapsed().as_secs());
+            dbg!(now_in_unix + now_from_start.elapsed().as_secs());
             Some(UnixTime::since_unix_epoch(Duration::from_secs(
                 now_in_unix + now_from_start.elapsed().as_secs(),
             )))
         } else {
-            dbg!(Debug2Format(&UnixTime::since_unix_epoch(Duration::from_secs(
-                UNIX_TIME))));
+            dbg!(Debug2Format(&UnixTime::since_unix_epoch(
+                Duration::from_secs(UNIX_TIME)
+            )));
             // .. or we can use the hardcoded UNIX time
-            Some(UnixTime::since_unix_epoch(Duration::from_secs(
-                UNIX_TIME,
-            )))
+            Some(UnixTime::since_unix_epoch(Duration::from_secs(UNIX_TIME)))
         }
     }
 }
@@ -200,16 +195,11 @@ pub async fn get_time_from_ntp_server(
     // - use NTPv3
     // - we are a client
     buf[0] = 0x1b;
-    sock.send_to(&buf, ntp_server)
-        .await
-        .unwrap();
+    sock.send_to(&buf, ntp_server).await.unwrap();
 
     let mut response = buf;
 
-    let (_read, _ntc_peer) = sock
-        .recv_from(&mut response)
-        .await
-        .unwrap();
+    let (_read, _ntc_peer) = sock.recv_from(&mut response).await.unwrap();
 
     let transmit_seconds = u32::from_be_bytes(response[TX_SECONDS].try_into().unwrap());
     transmit_seconds.into()
