@@ -65,16 +65,6 @@ At time of writing, `example.com` doesn't support X25519 ECDH, which is the only
 
 Running this code with `example.com` will cause `ERROR Rustls(AlertReceived(HandshakeFailure))`.
 
-## Cargo.toml
-
-TODO: edit your `Cargo.toml` when [PR 1502](https://github.com/rustls/rustls/pull/1502) is merged. It is now depending on a custom branch:
-
-```toml
-rustls = { git = "https://github.com/japaric/rustls", branch = "no-std-support", default-features = false, features = [
-    "tls12",
-] }
-```
-
 ## Logs
 
 We included logs of a successful run (`log_github.txt`) and a log with the `HandshakeFailure` when trying to connect to example.com (`log_example.txt`).
