@@ -1,11 +1,9 @@
 ## How to run the example on `STM32f429ZI` 
 
-Install `probe-rs` or `probe-run`, and choose one runner in `.cargo/config.toml`
+Prerequisites:
 
-```toml
-#runner = "probe-rs run --chip STM32F429ZITx"
-runner = "probe-run --chip STM32F429ZITx"
-```
+- Install `probe-rs`: `cargo binstall probe-rs-tools`
+- Install `flip-link`: `cargo install flip-link`
 
 Connect the dev kit to ethernet on the same network than your computer.
 Run the demo with `cargo run --release`
