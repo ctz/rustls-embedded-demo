@@ -1162,6 +1162,7 @@ dependencies = [
  "rustls-webpki",
  "sha2",
  "signature",
+ "smoltcp",
  "spin",
  "static_cell",
  "tlsf",

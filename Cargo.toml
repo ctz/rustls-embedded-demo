@@ -49,6 +49,7 @@ cortex-m-rt = "0.7.0"
 getrandom = { version = "0.2.11", features = ["custom"] }
 linked_list_allocator = "0.10.5"
 panic-probe = { version = "0.3", features = ["print-defmt"] }
+smoltcp = { version = "*", default-features = false, features = ["dns-max-server-count-2"] }
 spin = { version = "0.9.8", default-features = false, features = [
     "spin_mutex",
     "once",
