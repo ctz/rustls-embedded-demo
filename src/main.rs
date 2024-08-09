@@ -58,7 +58,7 @@ const HEAP_SIZE: usize = 25 * KB / 4;
 const INCOMING_TLS_BUFSIZ: usize = 6 * KB;
 const MAC_ADDR: [u8; 6] = [0x00, 0x00, 0xDE, 0xAD, 0xBE, 0xEF];
 
-const MAX_ITERATIONS: usize = 5 * 20;
+const MAX_ITERATIONS: usize = 300;
 const SEND_EARLY_DATA: bool = false;
 const EARLY_DATA: &[u8] = b"hello";
 
@@ -66,7 +66,7 @@ const OUTGOING_TLS_BUFSIZ: usize = KB / 2;
 const TCP_RX_BUFSIZ: usize = KB;
 const TCP_TX_BUFSIZ: usize = KB / 2;
 
-const SERVER_NAME: &str = "github.com";
+const SERVER_NAME: &str = "www.rust-lang.org";
 
 const SERVER_PORT: u16 = 443;
 
