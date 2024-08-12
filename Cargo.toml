@@ -97,3 +97,11 @@ debug = 2
 opt-level = 3
 
 [workspace]
+
+[patch.crates-io]
+# take fix for network-reachable dhcp panic in smoltcp
+embassy-net = { git = "https://github.com/embassy-rs/embassy.git", rev = "168a9f9d8ab451ca724e68de777e4e1601f865dd" }
+embassy-stm32 = { git = "https://github.com/embassy-rs/embassy.git", rev = "168a9f9d8ab451ca724e68de777e4e1601f865dd" }
+embassy-time = { git = "https://github.com/embassy-rs/embassy.git", rev = "168a9f9d8ab451ca724e68de777e4e1601f865dd" }
+embassy-time-driver = { git = "https://github.com/embassy-rs/embassy.git", rev = "168a9f9d8ab451ca724e68de777e4e1601f865dd" }
+embassy-time-queue-driver = { git = "https://github.com/embassy-rs/embassy.git", rev = "168a9f9d8ab451ca724e68de777e4e1601f865dd" }
