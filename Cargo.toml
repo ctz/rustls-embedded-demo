@@ -99,8 +99,10 @@ opt-level = 3
 
 [patch.crates-io]
 # take fix for network-reachable dhcp panic in smoltcp
-embassy-net = { git = "https://github.com/embassy-rs/embassy.git", rev = "168a9f9d8ab451ca724e68de777e4e1601f865dd" }
-embassy-stm32 = { git = "https://github.com/embassy-rs/embassy.git", rev = "168a9f9d8ab451ca724e68de777e4e1601f865dd" }
-embassy-time = { git = "https://github.com/embassy-rs/embassy.git", rev = "168a9f9d8ab451ca724e68de777e4e1601f865dd" }
-embassy-time-driver = { git = "https://github.com/embassy-rs/embassy.git", rev = "168a9f9d8ab451ca724e68de777e4e1601f865dd" }
-embassy-time-queue-driver = { git = "https://github.com/embassy-rs/embassy.git", rev = "168a9f9d8ab451ca724e68de777e4e1601f865dd" }
+embassy-net = { git = "https://github.com/embassy-rs/embassy.git", rev = "01d8508b6c9bf89e27a83b9587bcc13c358c1e51" }
+embassy-stm32 = { git = "https://github.com/embassy-rs/embassy.git", rev = "01d8508b6c9bf89e27a83b9587bcc13c358c1e51" }
+embassy-time = { git = "https://github.com/embassy-rs/embassy.git", rev = "01d8508b6c9bf89e27a83b9587bcc13c358c1e51" }
+embassy-time-driver = { git = "https://github.com/embassy-rs/embassy.git", rev = "01d8508b6c9bf89e27a83b9587bcc13c358c1e51" }
+embassy-time-queue-driver = { git = "https://github.com/embassy-rs/embassy.git", rev = "01d8508b6c9bf89e27a83b9587bcc13c358c1e51" }
+# take fix for nightly api change
+embassy-executor = { git = "https://github.com/embassy-rs/embassy.git", rev = "01d8508b6c9bf89e27a83b9587bcc13c358c1e51" }
