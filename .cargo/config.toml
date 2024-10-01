@@ -3,6 +3,7 @@ runner = "probe-rs run --chip STM32F429ZITx"
 
 rustflags = [
   "-C", "linker=flip-link",
+  "-Z", "fmt-debug=none",
 ]
 
 [build]
